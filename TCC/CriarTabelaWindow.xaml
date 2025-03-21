@@ -1,0 +1,78 @@
+﻿<Window x:Class="TCC.CriarTabelaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Criar Tabela" Height="450" Width="600">
+    <Grid Margin="10">
+        <!-- Define as linhas e colunas para organização -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Para o Nome da Tabela -->
+            <RowDefinition Height="Auto"/>
+            <!-- Para o Adicionar Coluna -->
+            <RowDefinition Height="*"/>
+            <!-- Lista de Colunas e Pré-visualização -->
+            <RowDefinition Height="Auto"/>
+            <!-- Botões de Ação -->
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1.5*"/>
+            <!-- Entrada de Dados -->
+            <ColumnDefinition Width="0.5*"/>
+            <!-- Exibição de Colunas -->
+        </Grid.ColumnDefinitions>
+
+        <!-- Nome da Tabela (Linha 0, Coluna 0-1) -->
+        <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Vertical">
+            <TextBlock Text="Nome da Tabela:" FontWeight="Bold" Margin="0,0,0,5"/>
+            <TextBox x:Name="TabelaTextBox" Height="30" />
+        </StackPanel>
+
+        <!-- Seção de Configuração de Colunas (Linha 1, Coluna 0) -->
+        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Vertical" Margin="0,10,20,0">
+            <TextBlock Text="Adicionar Coluna:" FontWeight="Bold" Margin="0,0,0,5"/>
+
+            <!-- Nome da Coluna -->
+            <TextBox x:Name="ColunaNomeTextBox" Height="30" Margin="0,0,0,10" />
+
+            <!-- Tipo de Dados -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Tipo:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <ComboBox x:Name="TipoDadoComboBox" Width="150">
+                    <ComboBoxItem Content="INT" />
+                    <ComboBoxItem Content="VARCHAR(255)" />
+                    <ComboBoxItem Content="TEXT" />
+                    <ComboBoxItem Content="DATE" />
+                    <ComboBoxItem Content="FLOAT" />
+                </ComboBox>
+            </StackPanel>
+
+            <!-- Restrições -->
+            <TextBlock Text="Restrições:" FontWeight="Bold" Margin="0,10,0,5"/>
+            <StackPanel Orientation="Vertical" Margin="0,0,0,10">
+                <CheckBox x:Name="NotNullCheckBox" Content="NOT NULL" />
+                <CheckBox x:Name="UniqueCheckBox" Content="UNIQUE" />
+                <TextBox x:Name="DefaultValueTextBox" Height="30"/>
+            </StackPanel>
+
+            <!-- Botão de Adicionar Coluna -->
+            <Button Content="Adicionar Coluna" Height="30" Width="150" HorizontalAlignment="Left" Click="AdicionarColunaButton_Click"/>
+        </StackPanel>
+
+        <!-- Lista de Colunas (Linha 1, Coluna 1) -->
+        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical" Margin="0,10,0,0">
+            <TextBlock Text="Colunas Adicionadas:" FontWeight="Bold" Margin="0,0,0,5"/>
+            <ListBox x:Name="ColunasListBox" Height="200"/>
+        </StackPanel>
+
+        <!-- Pré-visualização da Tabela (Linha 2, Coluna 0-1) -->
+        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Vertical" Margin="0,10,0,0">
+            <TextBlock Text="Pré-visualização da Tabela:" FontWeight="Bold" Margin="0,0,0,5"/>
+            <ListBox x:Name="TabelaPreviewListBox" Height="150"/>
+        </StackPanel>
+
+        <!-- Botões de Ação (Linha 3, Coluna 0-1) -->
+        <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="Criar Tabela" Height="30" Width="150" Click="CriarTabelaButton_Click" Margin="10,0,0,0"/>
+        </StackPanel>
+    </Grid>
+</Window>
