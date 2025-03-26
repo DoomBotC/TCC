@@ -80,6 +80,10 @@ namespace TCC
             {
                 // Passa o nome da tabela selecionada como argumento para o construtor da nova janela
                 AlterarTabela alterarTabela = new AlterarTabela(nomeTabela);
+
+                // Conecta o evento TabelaExcluida para atualizar o ListBox
+                alterarTabela.TabelaExcluida += ListarTabelas;
+
                 alterarTabela.ShowDialog(); // Exibe a janela como modal
             }
             else

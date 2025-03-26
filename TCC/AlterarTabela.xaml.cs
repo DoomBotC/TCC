@@ -337,6 +337,8 @@ namespace TCC
             }
         }
 
+        public event Action TabelaExcluida; // Evento para notificar a exclusão da tabela
+
         private void ExcluirTabela(string tabelaSelecionada)
         {
             string connectionString = "Server=localhost;Database=TCCBase;Uid=root;Pwd=usbw;";
@@ -355,8 +357,11 @@ namespace TCC
                         command.ExecuteNonQuery();
                         MessageBox.Show($"Tabela '{tabelaSelecionada}' excluída com sucesso!");
 
-                        // Retorna para a MainWindow
-                        this.Close(); // Fecha a janela atual
+                        // Dispara o evento para notificar que a tabela foi excluída
+                        TabelaExcluida?.Invoke();
+
+                        // Fecha a janela após exclusão
+                        this.Close();
                     }
                 }
                 catch (Exception ex)
