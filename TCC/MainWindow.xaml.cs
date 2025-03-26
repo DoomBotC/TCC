@@ -46,13 +46,12 @@ namespace TCC
                     string query = "SHOW TABLES";
 
                     using (MySqlCommand command = new MySqlCommand(query, connection))
+                    using (MySqlDataReader reader = command.ExecuteReader())
                     {
-                        using (MySqlDataReader reader = command.ExecuteReader())
+                        TabelasListBox.Items.Clear(); // Limpa os itens existentes no ListBox
+                        while (reader.Read())
                         {
-                            while (reader.Read())
-                            {
-                                TabelasListBox.Items.Add(reader.GetString(0)); // Adiciona o nome da tabela à ListBox
-                            }
+                            TabelasListBox.Items.Add(reader.GetString(0)); // Adiciona os nomes das tabelas
                         }
                     }
                 }
@@ -66,9 +65,12 @@ namespace TCC
 
         private void CriarTabelaButton_Click(object sender, RoutedEventArgs e)
         {
-            // Abre a nova janela
-            CriarTabelaWindow criarTabelaWindow = new CriarTabelaWindow();
-            criarTabelaWindow.ShowDialog(); // Exibe a janela de forma modal
+            // Abre a janela para criar tabela
+            var criarTabelaWindow = new CriarTabelaWindow();
+            if (criarTabelaWindow.ShowDialog() == true) // Verifica se a tabela foi criada com sucesso
+            {
+                ListarTabelas(); // Atualiza a lista de tabelas
+            }
         }
 
         private void AlterarTabelaButton_Click(object sender, RoutedEventArgs e)
@@ -100,7 +102,7 @@ namespace TCC
                 try
                 {
                     connection.Open();
-                    string query = $"SELECT * FROM {nomeTabela}";
+                    string query = $"SELECT * FROM `{nomeTabela}`";
 
                     using (MySqlCommand command = new MySqlCommand(query, connection))
                     {

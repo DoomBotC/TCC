@@ -122,6 +122,37 @@ namespace TCC
         }
 
 
+        private void AtualizarListBoxes()
+        {
+            // Atualiza as colunas
+            List<string> colunas = ObterColunas(nomeTabelaAT);
+            if (colunas.Count > 0)
+            {
+                ColunasListBox.ItemsSource = colunas;
+            }
+            else
+            {
+                ColunasListBox.ItemsSource = null; // Remove itens se não houver colunas
+                MessageBox.Show("Nenhuma coluna encontrada para esta tabela.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+
+            // Se uma coluna já estiver selecionada, atualiza os valores
+            if (!string.IsNullOrEmpty(nomeColunaAT))
+            {
+                List<string> valores = ObterValoresDaColuna(nomeTabelaAT, nomeColunaAT);
+                if (valores.Count > 0)
+                {
+                    ValoresListBox.ItemsSource = valores;
+                }
+                else
+                {
+                    ValoresListBox.ItemsSource = null; // Remove itens se não houver valores
+                    MessageBox.Show("Nenhum valor encontrado para esta coluna.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+        }
+
+
         // Método para inserir dados na tabela
         private void InserirDados(string tabelaSelecionada, Dictionary<string, string> dados)
         {
@@ -142,6 +173,7 @@ namespace TCC
                     {
                         command.ExecuteNonQuery();
                         MessageBox.Show($"Registro inserido com sucesso na tabela '{tabelaSelecionada}'!");
+                        AtualizarListBoxes();
                     }
                 }
                 catch (Exception ex)
@@ -200,6 +232,7 @@ namespace TCC
                     {
                         int linhasAfetadas = command.ExecuteNonQuery();
                         MessageBox.Show($"{linhasAfetadas} registro(s) atualizado(s).");
+                        AtualizarListBoxes();
                     }
                 }
                 catch (Exception ex)
@@ -256,6 +289,7 @@ namespace TCC
                     {
                         int linhasAfetadas = command.ExecuteNonQuery();
                         MessageBox.Show($"{linhasAfetadas} registro(s) excluído(s).");
+                        AtualizarListBoxes();
                     }
                 }
                 catch (Exception ex)

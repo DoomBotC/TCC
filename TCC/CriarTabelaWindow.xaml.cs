@@ -69,6 +69,9 @@ namespace TCC
                 {
                     CriarNovaTabela(nomeTabela, colunas);
                     MessageBox.Show($"Tabela '{nomeTabela}' criada com sucesso!");
+
+                    // Define o resultado como true para sinalizar sucesso
+                    this.DialogResult = true;
                     this.Close();
                 }
                 catch (Exception ex)
