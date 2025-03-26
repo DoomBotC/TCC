@@ -3,6 +3,7 @@ using System;
 using System.Windows;
 using MySql.Data.MySqlClient;
 using System.Windows.Controls;
+using System.Linq;
 
 namespace TCC
 {
@@ -10,6 +11,7 @@ namespace TCC
     {
         private string nomeTabelaAT; // Nome da tabela selecionada
         private string nomeColunaAT; // Nome da coluna selecionada
+        private Dictionary<int, string> valoresColuna = new Dictionary<int, string>(); // Dicionário para armazenar ID e Valor
 
         // Construtor com parâmetro
         public AlterarTabela(string tabelaSelecionada)
@@ -64,9 +66,10 @@ namespace TCC
             return colunas;
         }
 
-        private List<string> ObterValoresDaColuna(string tabela, string coluna)
+        // Método para obter os valores de uma coluna com seus IDs
+        private Dictionary<int, string> ObterValoresDaColuna(string tabela, string coluna)
         {
-            List<string> valores = new List<string>();
+            Dictionary<int, string> valores = new Dictionary<int, string>();
             string connectionString = "Server=localhost;Database=TCCBase;Uid=root;Pwd=usbw;";
 
             using (MySqlConnection connection = new MySqlConnection(connectionString))
@@ -74,7 +77,7 @@ namespace TCC
                 try
                 {
                     connection.Open();
-                    string query = $"SELECT `{coluna}` FROM `{tabela}`";
+                    string query = $"SELECT `ID`, `{coluna}` FROM `{tabela}`";
 
                     using (MySqlCommand command = new MySqlCommand(query, connection))
                     {
@@ -82,11 +85,9 @@ namespace TCC
                         {
                             while (reader.Read())
                             {
-                                string valor = reader[coluna]?.ToString();
-                                if (!string.IsNullOrEmpty(valor))
-                                {
-                                    valores.Add(valor);
-                                }
+                                int id = reader.GetInt32("ID"); // Captura o ID
+                                string valor = reader[coluna]?.ToString(); // Captura o valor da coluna
+                                valores[id] = valor; // Adiciona ao dicionário
                             }
                         }
                     }
@@ -109,17 +110,19 @@ namespace TCC
                 MessageBox.Show($"Coluna selecionada: {nomeColunaAT}", "Seleção de Coluna");
 
                 // Obter e exibir os valores da coluna selecionada
-                List<string> valores = ObterValoresDaColuna(nomeTabelaAT, nomeColunaAT);
-                if (valores.Count > 0)
+                valoresColuna = ObterValoresDaColuna(nomeTabelaAT, nomeColunaAT);
+                if (valoresColuna.Count > 0)
                 {
-                    ValoresListBox.ItemsSource = valores; // Assume que você tem um ListBox chamado ValoresListBox
+                    ValoresListBox.ItemsSource = valoresColuna.Values.ToList(); // Converte os valores para uma lista e preenche o ListBox
                 }
                 else
                 {
+                    ValoresListBox.ItemsSource = null; // Limpa o ListBox caso não haja valores
                     MessageBox.Show("Nenhum valor encontrado para esta coluna.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
         }
+
 
 
         private void AtualizarListBoxes()
@@ -136,21 +139,22 @@ namespace TCC
                 MessageBox.Show("Nenhuma coluna encontrada para esta tabela.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
 
-            // Se uma coluna já estiver selecionada, atualiza os valores
+            // Se uma coluna já estiver selecionada, atualiza os valores e o dicionário
             if (!string.IsNullOrEmpty(nomeColunaAT))
             {
-                List<string> valores = ObterValoresDaColuna(nomeTabelaAT, nomeColunaAT);
-                if (valores.Count > 0)
+                valoresColuna = ObterValoresDaColuna(nomeTabelaAT, nomeColunaAT); // Atualiza o dicionário com os valores e IDs
+                if (valoresColuna.Count > 0)
                 {
-                    ValoresListBox.ItemsSource = valores;
+                    ValoresListBox.ItemsSource = valoresColuna.Values.ToList(); // Exibe os valores no ListBox
                 }
                 else
                 {
-                    ValoresListBox.ItemsSource = null; // Remove itens se não houver valores
+                    ValoresListBox.ItemsSource = null; // Limpa o ListBox caso não haja valores
                     MessageBox.Show("Nenhum valor encontrado para esta coluna.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
         }
+        
 
 
         // Método para inserir dados na tabela
@@ -215,7 +219,7 @@ namespace TCC
 
 
         // Método para atualizar dados
-        private void AtualizarDados(string tabelaSelecionada, string coluna, string valor, string condicao)
+        private void AtualizarDados(string tabelaSelecionada, int id, string coluna, string valor)
         {
             string connectionString = "Server=localhost;Database=TCCBase;Uid=root;Pwd=usbw;";
 
@@ -225,14 +229,14 @@ namespace TCC
                 {
                     connection.Open();
 
-                    // Monta a consulta SQL usando os parâmetros fornecidos
-                    string query = $"UPDATE `{tabelaSelecionada}` SET `{coluna}` = '{valor}' WHERE {condicao}";
+                    // Usar o ID como condição exclusiva na consulta SQL
+                    string query = $"UPDATE `{tabelaSelecionada}` SET `{coluna}` = '{valor}' WHERE `ID` = {id}";
 
                     using (MySqlCommand command = new MySqlCommand(query, connection))
                     {
                         int linhasAfetadas = command.ExecuteNonQuery();
                         MessageBox.Show($"{linhasAfetadas} registro(s) atualizado(s).");
-                        AtualizarListBoxes();
+                        AtualizarListBoxes(); // Atualizar ListBox após alteração
                     }
                 }
                 catch (Exception ex)
@@ -246,23 +250,30 @@ namespace TCC
         // Evento do botão Atualizar Dados
         private void AtualizarDadosButton_Click(object sender, RoutedEventArgs e)
         {
-            // Verifica se a tabela, a coluna e o valor foram selecionados
-            if (!string.IsNullOrEmpty(nomeTabelaAT) && !string.IsNullOrEmpty(nomeColunaAT) && ValoresListBox.SelectedItem is string valorSelecionado)
+            // Verifica se a tabela e o valor foram selecionados
+            if (!string.IsNullOrEmpty(nomeTabelaAT) && ValoresListBox.SelectedItem is string valorSelecionado)
             {
-                // Solicita o novo valor para a coluna selecionada
-                string novoValor = Microsoft.VisualBasic.Interaction.InputBox($"Insira o novo valor para a coluna '{nomeColunaAT}':", "Novo Valor", "");
+                // Busca o ID associado ao valor selecionado
+                int idSelecionado = valoresColuna.FirstOrDefault(v => v.Value == valorSelecionado).Key;
 
-                if (!string.IsNullOrEmpty(novoValor))
+                if (idSelecionado != 0)
                 {
-                    // Usa o valor selecionado como condição
-                    string condicao = $"{nomeColunaAT} = '{valorSelecionado}'";
+                    // Solicita o novo valor para a coluna selecionada
+                    string novoValor = Microsoft.VisualBasic.Interaction.InputBox($"Insira o novo valor para a coluna '{nomeColunaAT}':", "Novo Valor", "");
 
-                    // Chama o método para atualizar os dados
-                    AtualizarDados(nomeTabelaAT, nomeColunaAT, novoValor, condicao);
+                    if (!string.IsNullOrEmpty(novoValor))
+                    {
+                        // Chama o método para atualizar os dados com base no ID
+                        AtualizarDados(nomeTabelaAT, idSelecionado, nomeColunaAT, novoValor);
+                    }
+                    else
+                    {
+                        MessageBox.Show("O campo 'Novo Valor' não pode estar vazio.", "Aviso");
+                    }
                 }
                 else
                 {
-                    MessageBox.Show("O campo 'Novo Valor' não pode estar vazio.", "Aviso");
+                    MessageBox.Show("Erro ao identificar o registro selecionado. Tente novamente.", "Erro");
                 }
             }
             else
@@ -274,7 +285,7 @@ namespace TCC
 
 
         // Método para excluir dados
-        private void ExcluirDados(string tabelaSelecionada, string condicao)
+        private void ExcluirDados(string tabelaSelecionada, int id)
         {
             string connectionString = "Server=localhost;Database=TCCBase;Uid=root;Pwd=usbw;";
 
@@ -283,13 +294,14 @@ namespace TCC
                 try
                 {
                     connection.Open();
-                    string query = $"DELETE FROM `{tabelaSelecionada}` WHERE {condicao}";
+                    // Usar o ID diretamente na cláusula WHERE
+                    string query = $"DELETE FROM `{tabelaSelecionada}` WHERE `ID` = {id}";
 
                     using (MySqlCommand command = new MySqlCommand(query, connection))
                     {
                         int linhasAfetadas = command.ExecuteNonQuery();
                         MessageBox.Show($"{linhasAfetadas} registro(s) excluído(s).");
-                        AtualizarListBoxes();
+                        AtualizarListBoxes(); // Atualizar ListBox após exclusão
                     }
                 }
                 catch (Exception ex)
@@ -303,14 +315,21 @@ namespace TCC
         // Evento do botão Excluir Dados
         private void ExcluirDadosButton_Click(object sender, RoutedEventArgs e)
         {
-            // Verifica se a tabela, a coluna e o valor foram selecionados
-            if (!string.IsNullOrEmpty(nomeTabelaAT) && !string.IsNullOrEmpty(nomeColunaAT) && ValoresListBox.SelectedItem is string valorSelecionado)
+            // Verifica se a tabela e o valor foram selecionados
+            if (!string.IsNullOrEmpty(nomeTabelaAT) && ValoresListBox.SelectedItem is string valorSelecionado)
             {
-                // Constrói a condição usando a coluna e o valor selecionado
-                string condicao = $"{nomeColunaAT} = '{valorSelecionado}'";
+                // Busca o ID associado ao valor selecionado
+                int idSelecionado = valoresColuna.FirstOrDefault(v => v.Value == valorSelecionado).Key;
 
-                // Chama o método para excluir os dados com base na condição gerada
-                ExcluirDados(nomeTabelaAT, condicao);
+                if (idSelecionado != 0)
+                {
+                    // Chama o método para excluir o dado com base no ID
+                    ExcluirDados(nomeTabelaAT, idSelecionado);
+                }
+                else
+                {
+                    MessageBox.Show("Erro ao identificar o registro selecionado. Tente novamente.", "Erro");
+                }
             }
             else
             {
