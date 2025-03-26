@@ -337,5 +337,54 @@ namespace TCC
             }
         }
 
+        private void ExcluirTabela(string tabelaSelecionada)
+        {
+            string connectionString = "Server=localhost;Database=TCCBase;Uid=root;Pwd=usbw;";
+
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+
+                    // Comando SQL para excluir a tabela
+                    string query = $"DROP TABLE `{tabelaSelecionada}`";
+
+                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                    {
+                        command.ExecuteNonQuery();
+                        MessageBox.Show($"Tabela '{tabelaSelecionada}' excluída com sucesso!");
+
+                        // Retorna para a MainWindow
+                        this.Close(); // Fecha a janela atual
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Erro ao excluir a tabela: {ex.Message}");
+                }
+            }
+        }
+        private void ExcluirTabelaButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(nomeTabelaAT))
+            {
+                // Solicita confirmação do usuário antes de excluir
+                MessageBoxResult result = MessageBox.Show($"Tem certeza de que deseja excluir a tabela '{nomeTabelaAT}'? Esta ação não pode ser desfeita.",
+                                                          "Confirmação",
+                                                          MessageBoxButton.YesNo,
+                                                          MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    ExcluirTabela(nomeTabelaAT);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Nenhuma tabela selecionada para exclusão.", "Aviso");
+            }
+        }
+
     }
 }

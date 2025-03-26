@@ -41,14 +41,18 @@
             HorizontalAlignment="Left" />
         <Button Content="Inserir Dados" 
                     Click="InserirDadosButton_Click" 
-                    Margin="101,560,549,182" />
+                    Margin="101,526,549,216" />
         <Button Content="Atualizar Dados" 
                     Click="AtualizarDadosButton_Click" 
-                    Margin="325,560,325,182" />
+                    Margin="325,526,325,216" />
         <Button Content="Excluir Dados" 
                     Click="ExcluirDadosButton_Click" 
-                    Margin="551,560,99,182" 
+                    Margin="551,526,99,216" 
                     />
+
+        <Button Content="Excluir Tabela"
+        Margin="302,603,302,133"
+        Click="ExcluirTabelaButton_Click" />
     </Grid>
 </Window>
 
